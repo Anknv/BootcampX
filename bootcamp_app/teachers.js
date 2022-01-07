@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 
 const args = process.argv.slice(2);
 
+//database connection
 const pool = new Pool({
   user: 'vagrant',
   password: '123',
@@ -9,16 +10,19 @@ const pool = new Pool({
   database: 'bootcampx'
 });
 
+//query execution
 pool.query(`
-  SELECT students.id, students.name as student, cohorts.name as cohort
-  FROM students
+  SELECT DISTINCT teachers.name as teacher, cohorts.name as cohort
+  FROM assistance_requests
+  JOIN teachers ON teachers.id = teacher_id
+  JOIN students ON students.id = student_id
   JOIN cohorts ON cohorts.id = cohort_id
   WHERE cohorts.name LIKE '%${args[0]}%'
-  LIMIT ${args[1] || 5};
+  ORDER BY teacher;
 `)
   .then(function callback(data) { 
     data.rows.forEach(user => {
-      console.log(`${user.student} has an id of ${user.id} and was in the ${user.cohort} cohort`);
+      console.log(`${user.cohort}: ${user.teacher}`);
     })
   })
   .catch(function error(err) {
